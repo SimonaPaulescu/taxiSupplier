@@ -3,40 +3,17 @@ package com.taxi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.*;
 
-public class Main {
-
-    public static void main(String[] args) throws IOException, JSONException {
-        Optional<Integer> numberOfPassengers = Optional.empty();
-        if (args.length < 4) {
-            throw new InvalidParameterException("Please supply 2 pairs of lat, lon coordinates");
-        }
-
-        for (String arg : args) {
-            try {
-                Float.parseFloat(arg);
-            } catch (final NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (args.length > 4) {
-            numberOfPassengers = Optional.of(Integer.parseInt(args[4]));
-        }
-
-        final List<TaxiSearchResult> results = getTaxiResults(args, numberOfPassengers);
-
-        for (TaxiSearchResult result : results) {
-            System.out.println(String.format("%s -- %s -- %s ", result.getTaxiInfo().getCarType(), result.getSupplierId(), result.getTaxiInfo().getPrice()));
-        }
-    }
-
+@Service
+public class TaxiService {
     private static List getTaxiResults(final String[] coordinates, Optional<Integer> numberOfPassengers) throws IOException, JSONException {
         HashMap<String, TaxiSearchResult> taxiSearchResults = new HashMap<>();
         final List<String> supplierIds = new ArrayList<>(Arrays.asList("dave", "jeff", "eric"));
@@ -63,10 +40,7 @@ public class Main {
                 }
             }
         }
-        final List<TaxiSearchResult> results = new ArrayList<>(taxiSearchResults.values());
-        results.sort(Collections.reverseOrder());
-        return results;
-
+        return new ArrayList<>(taxiSearchResults.values());
     }
 
     private static JSONObject sendGetRequest(final String supplierId, final String[] coordinates) throws IOException, JSONException {
