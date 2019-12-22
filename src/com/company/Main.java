@@ -1,43 +1,81 @@
-package com.company;
+package com.taxi;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.InvalidParameterException;
+import java.util.*;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        for (String arg : args) {
-            System.out.println(arg);
-        }
-        System.out.println(args.length);
+        Optional<Integer> numberOfPassengers = Optional.empty();
         if (args.length < 4) {
             throw new InvalidParameterException("Please supply 2 pairs of lat, lon coordinates");
         }
 
-        try {
-            final float pickupLat = Float.parseFloat(args[0]);
-            final float pickupLon = Float.parseFloat(args[1]);
-            final float dropLat = Float.parseFloat(args[2]);
-            final float dropLon = Float.parseFloat(args[3]);
-            final String result = getTaxiResults(pickupLat, pickupLon, dropLat, dropLon);
-            System.out.println(result);
-        } catch (final NumberFormatException e) {
-            e.printStackTrace();
+        for (String arg : args) {
+            try {
+                Float.parseFloat(arg);
+            } catch (final NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (args.length > 4) {
+            numberOfPassengers = Optional.of(Integer.parseInt(args[4]));
+        }
+
+        final List<TaxiSearchResult> results = getTaxiResults(args, numberOfPassengers);
+        results.sort(Collections.reverseOrder());
+        for (TaxiSearchResult result : results) {
+            System.out.println(String.format("%s -- %s -- %s ", result.getTaxiInfo().getCarType(), result.getSupplierId(), result.getTaxiInfo().getPrice()));
         }
     }
 
-    private static String getTaxiResults(float lat1, float lon1, float lat2, float lon2) throws IOException {
-        URL url = new URL(String.format("https://techtest.rideways.com/dave?pickup=%s,%s&dropoff=%s,%s", lat1, lon1, lat2, lon2));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        int responseCode = connection.getResponseCode();
+    private static List getTaxiResults(final String[] parameters, Optional<Integer> numberOfPassengers) throws IOException {
+        HashMap<String, TaxiSearchResult> taxiSearchResults = new HashMap<>();
+        final List<String> supplierIds = new ArrayList<>(Arrays.asList("dave", "jeff", "eric"));
 
-        System.out.println("Request returned with code: " + responseCode);
-        if (responseCode == HttpURLConnection.HTTP_OK) { // success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    connection.getInputStream()));
+        for (String supplierId : supplierIds) {
+            final JSONObject result = sendGetRequest(supplierId, parameters);
+            if (result.length() > 0) {
+                final ObjectMapper mapper = new ObjectMapper();
+                final TaxiSuppliersResult taxiSupplierResult = mapper.readValue(result.toString(),
+                        TaxiSuppliersResult.class);
+
+                for (TaxiInfo currentTaxiInfo : taxiSupplierResult.getOptions()) {
+                    if (taxiSearchResults.containsKey(currentTaxiInfo.getCarType())) {
+                        final TaxiSearchResult taxiSearchResult = taxiSearchResults.get(currentTaxiInfo.getCarType());
+                        if (taxiSearchResult.getTaxiInfo().getPrice() > currentTaxiInfo.getPrice()) {
+                            taxiSearchResults.replace(currentTaxiInfo.getCarType(),
+                                    new TaxiSearchResult(currentTaxiInfo, taxiSupplierResult.getSupplier()));
+                        }
+                    } else {
+                        if (numberOfPassengers.isPresent() && CarCapacities.CARS.valueOf(currentTaxiInfo.getCarType()).getCapacity() >= numberOfPassengers.get()) {
+                            taxiSearchResults.put(currentTaxiInfo.getCarType(), new TaxiSearchResult(currentTaxiInfo, taxiSupplierResult.getSupplier()));
+                        }
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<>(taxiSearchResults.values());
+    }
+
+    private static JSONObject sendGetRequest(final String supplierId, final String[] coordinates) throws IOException {
+        URL url = new URL(String.format("https://techtest.rideways.com/%s?pickup=%s,%s&dropoff=%s,%s",
+                supplierId, coordinates[0], coordinates[1], coordinates[2], coordinates[3]));
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(2000);
+        final int responseCode = connection.getResponseCode();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             String inputLine;
             StringBuilder response = new StringBuilder();
 
@@ -45,9 +83,9 @@ public class Main {
                 response.append(inputLine);
             }
             in.close();
-            return response.toString();
+            return new JSONObject(response.toString());
         } else {
-            throw new InternalError("The request is unsuccessful");
+            return new JSONObject();
         }
     }
 }
