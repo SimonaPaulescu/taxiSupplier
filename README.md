@@ -9,4 +9,5 @@ The project contains the TaxiSuppliersCLI class which will run part1 of the chal
 
 For the second part of the project, I have split the code in resource(dealing with incoming requests), service(dealing with all logic), and models(pojos). In order to start the API, add Run/Debug  Configuration with com.taxi.App as main class.
 A sample request looks like this:
+
 {env}/taxi?pickup_lat=53.455999&pickup_lon=-2.246844&dropoff_lat=53.552277&dropoff_lon=-2.323437
