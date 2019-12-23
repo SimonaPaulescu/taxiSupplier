@@ -1,6 +1,6 @@
 Setup:
 IDE : Intellij Ultimate 2019.2.3
-Required: Java 11 SDK, Maven
+Required: Java 11 SDK, Maven 3.3+
 
 The project contains the TaxiSuppliersCLI class which will run part1 of the challenge. In order to run it:
 - add Run/Debug Configuration and as main class add the com.taxi.TaxiSuppliersCLI class
