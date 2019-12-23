@@ -102,6 +102,7 @@ public class TaxiSuppliersCLI {
     final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     connection.setRequestMethod("GET");
     connection.setConnectTimeout(2000);
+    connection.setReadTimeout(2000);
     final int responseCode = connection.getResponseCode();
 
     if (responseCode == HttpURLConnection.HTTP_OK) {
