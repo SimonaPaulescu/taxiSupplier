@@ -1,6 +1,6 @@
 package com.taxi.resource;
 
-import com.taxi.json.TaxiSearchResult;
+import com.taxi.models.json.TaxiSearchResult;
 import com.taxi.service.TaxiService;
 import com.taxi.transformer.TaxiSearchResultTransformer;
 import org.json.JSONException;

@@ -1,10 +1,10 @@
 package com.taxi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taxi.domain.TaxiSearchResult;
+import com.taxi.models.domain.TaxiSearchResult;
 import com.taxi.helpers.CarCapacities;
-import com.taxi.json.TaxiInfo;
-import com.taxi.json.TaxiSuppliersResult;
+import com.taxi.models.json.TaxiInfo;
+import com.taxi.models.json.TaxiSuppliersResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;

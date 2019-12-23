@@ -1,4 +1,4 @@
-package com.taxi.json;
+package com.taxi.models.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

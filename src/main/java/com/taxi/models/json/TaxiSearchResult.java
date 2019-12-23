@@ -1,15 +1,15 @@
-package com.taxi.domain;
-
-import com.taxi.json.TaxiInfo;
+package com.taxi.models.json;
 
 public class TaxiSearchResult implements Comparable<TaxiSearchResult> {
-  private final TaxiInfo taxiInfo;
-  private final String supplierId;
+  private TaxiInfo taxiInfo;
+  private String supplierId;
 
   public TaxiSearchResult(final TaxiInfo taxiInfo, final String supplierId) {
     this.taxiInfo = taxiInfo;
     this.supplierId = supplierId;
   }
+
+  public TaxiSearchResult() {}
 
   @Override
   public int compareTo(TaxiSearchResult o) {
